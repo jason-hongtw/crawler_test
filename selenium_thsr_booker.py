@@ -12,7 +12,7 @@ driver = webdriver.Chrome(options=options)
 driver.get("https://irs.thsrc.com.tw/IMINT/")
 
 '''
-# Step 1: setup options for booking information
+Step 1: setup options for booking information
 '''
 
 #click cookie button
@@ -59,10 +59,12 @@ while True:
         break
     except NoSuchElementException: #if exception is raised, it means captcha validation is correct
         print('Captcha validation is incorrect, retrying...')
+        time.sleep(2)
+
 
 
 '''
-# Step 2: booking right schedule
+Step 2: booking right schedule
 '''
 trains_info = list()
 trains = driver.find_element(
@@ -75,11 +77,10 @@ for train in trains:
     # train_code = train.find_element(By.ID, 'QueryCode').text
     # radio_box = train.find_element(By.CLASS_NAME, 'uk-radio')
     info = train.find_element(By.CLASS_NAME, 'uk-radio')
-
     trains_info.append(
         {
-            #bs4: info.get('querydeparture')
-            'depart_time': info.get_attribute('querydeparture'), 
+            # bs4: info.get('attribute')
+            'depart_time': info.get_attribute('querydeparture'),
             'arrival_time': info.get_attribute('queryarrival'),
             'duration': info.get_attribute('queryestimatedtime'),
             'train_code': info.get_attribute('querycode'),
@@ -88,6 +89,82 @@ for train in trains:
     )
 
 pprint(trains_info)
+# Choose train
+for idx, train in enumerate(trains_info): #enumerate: return index and value
+    idx += 1
+    print(
+        f"({idx}) - {train['train_code']}, 行駛時間={train['duration']} | {train['depart_time']} -> {train['arrival_time']}")
+
+while True:
+    try:
+        which_train = int(input("Choose your train. Enter from 1~10:\n"))-1
+        trains_info[which_train]['radio_box'].click()
+        break
+    except IndexError:
+        print('Index out of range, please enter again.')
+
+
+# Submit booking requests
+driver.find_element(By.NAME, 'SubmitButton').click()
+
+# Check if page is redirected to passenger information page
+time.sleep(2)
+while True:
+    try:
+        driver.find_element(By.CLASS_NAME, 'ticket-summary')
+        print('Redirected to passenger information page')
+        break
+    except NoSuchElementException:
+        print('Page is not redirected to passenger information page, retrying...')
+        time.sleep(2)
+'''
+Step 3: fill in passenger information
+'''
+
+#Check booking information for user
+print("確認訂票: ")
+print(
+    f"車次: {trains_info[which_train]['train_code']} | \
+    行駛時間: {trains_info[which_train]['duration']} | \
+    {trains_info[which_train]['depart_time']} -> \
+    {trains_info[which_train]['arrival_time']}"
+)
+print('您的車票共 ', driver.find_element(By.ID, 'TotalPrice').text, " 元")
+driver.find_element(
+    By.CLASS_NAME, 'ticket-summary').screenshot('thsr_summary.png')
+
+# enter personal ID
+input_personal_id = driver.find_element(By.ID, 'idNumber')
+personal_id = input('Please enter your personal ID: \n') #\n: new line
+input_personal_id.send_keys(personal_id)
+
+# enter phone number
+input_phone = driver.find_element(By.ID, 'mobilePhone')
+phone_number = input('Please enter your phone number: \n')
+input_phone.send_keys(phone_number)
+
+# enter email
+input_email = driver.find_element(By.ID, 'email')
+email = input('Please enter your email: \n')
+input_email.send_keys(email)
+
+# check agree box
+agree_box = driver.find_element(By.NAME, 'agree')
+agree_box.click()
+
+# submit
+driver.find_element(By.ID, 'isSubmit').click()
+
+# check if page is redirected to payment page
+time.sleep(2)
+while True:
+    try:
+        driver.find_element(By.CLASS_NAME, 'uk-flex uk-flex-between uk-flex-column primary-payment-v2-inner')
+        print('Redirected to payment page')
+        break
+    except NoSuchElementException:
+        print('Page is not redirected to payment page, retrying...')
+        time.sleep(2)
 
 time.sleep(2000)
 driver.quit()
