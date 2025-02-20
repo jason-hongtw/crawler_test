@@ -4,7 +4,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select  # 下拉式選單使用
 from ocr_component import get_captcha_code
 
-driver = webdriver.Chrome()
+options = webdriver.ChromeOptions() #創立 driver物件所需的參數物件(防止爬網頁繞圈)
+options.add_argument("--disable-blink-features=AutomationControlled")
+driver = webdriver.Chrome(options=options)
 driver.get("https://irs.thsrc.com.tw/IMINT/")
 accept_cookie_button = driver.find_element(By.ID, "cookieAccpetBtn")
 accept_cookie_button.click()
