@@ -1,4 +1,5 @@
 import time
+import os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select  # 下拉式選單使用
@@ -135,17 +136,23 @@ driver.find_element(
 
 # enter personal ID
 input_personal_id = driver.find_element(By.ID, 'idNumber')
-personal_id = input('Please enter your personal ID: \n') #\n: new line
+#personal_id = input('Please enter your personal ID: \n') #\n: new line
+#get personal ID from environment variable, ev used to named in uppercase
+personal_id = os.getenv('PERSONAL_ID')
 input_personal_id.send_keys(personal_id)
 
 # enter phone number
 input_phone = driver.find_element(By.ID, 'mobilePhone')
-phone_number = input('Please enter your phone number: \n')
+#phone_number = input('Please enter your phone number: \n')
+#get phone number from environment variable
+phone_number = os.getenv('PERSONAL_PHONE_NUMBER')
 input_phone.send_keys(phone_number)
 
 # enter email
 input_email = driver.find_element(By.ID, 'email')
-email = input('Please enter your email: \n')
+#email = input('Please enter your email: \n')
+#get email from environment variable
+email = os.getenv('PERSONAL_EMAIL')
 input_email.send_keys(email)
 
 # check agree box
