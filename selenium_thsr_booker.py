@@ -142,18 +142,18 @@ personal_id = os.getenv('PERSONAL_ID')
 input_personal_id.send_keys(personal_id)
 
 # enter phone number
-input_phone = driver.find_element(By.ID, 'mobilePhone')
+#input_phone = driver.find_element(By.ID, 'mobilePhone')
 #phone_number = input('Please enter your phone number: \n')
 #get phone number from environment variable
-phone_number = os.getenv('PERSONAL_PHONE_NUMBER')
-input_phone.send_keys(phone_number)
+#phone_number = os.getenv('PERSONAL_PHONE_NUMBER')
+#input_phone.send_keys(phone_number)
 
 # enter email
-input_email = driver.find_element(By.ID, 'email')
+#input_email = driver.find_element(By.ID, 'email')
 #email = input('Please enter your email: \n')
 #get email from environment variable
-email = os.getenv('PERSONAL_EMAIL')
-input_email.send_keys(email)
+#email = os.getenv('PERSONAL_EMAIL')
+#input_email.send_keys(email)
 
 # check agree box
 agree_box = driver.find_element(By.NAME, 'agree')
@@ -172,6 +172,11 @@ while True:
     except NoSuchElementException:
         print('Page is not redirected to payment page, retrying...')
         time.sleep(2)
+
+# Save booking result
+driver.find_element(
+    By.CLASS_NAME, 'ticket-summary').screenshot('thsr_booking_result.png')
+print("訂票完成!")
 
 time.sleep(2000)
 driver.quit()
