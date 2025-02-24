@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxury Brand Inspired Page</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f1e9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: auto;
+        }
+        .container {
+            text-align: center;
+            padding: 40px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0d8c9;
+        }
+        h1 {
+            font-size: 2em;
+            color: #1a1a1a;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        h2 {
+            font-size: 1.5em;
+            color: #202020;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        p {
+            font-size: 1em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .input-field {
+            width: 100%;
+            max-width: 300px;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #d4a373;
+            background-color: #fff;
+            font-size: 1em;
+            color: #333;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        .input-field:focus {
+            border-color: #a67c00;
+        }
+        .btn {
+            padding: 12px 30px;
+            margin: 0 10px;
+            border: none;
+            font-size: 1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background-color: #1a1a1a;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background-color: #d4a373;
+            color: #1a1a1a;
+        }
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid #1a1a1a;
+            color: #1a1a1a;
+        }
+        .btn-secondary:hover {
+            background-color: #1a1a1a;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <h1>Welcome</h1>
+        {% if name %}
+            <h2>Hello, {{ name }}!</h2>
+        {% endif %}
+
+        <h2>Get numbers</h2>
+        {% for number in numbers %}
+            <p>Get number {{number}}</p>
+        {% endfor %}
+
+        <h2>Get pairs</h2>
+        {% for alpha, number in pairs %}
+            <p>  Get pairs : {{ alpha }}, {{ number }} </p>
+        {% endfor %}
+
+        <h2>Get dictionary</h2>
+        {% for key, value in dict_data.items() %}
+            <p>  Get dictionary : {{ key }}, {{ value }} </p>
+        {% endfor %}
+
+        {% for key in dict_data %}
+            <p>  Get value with key: {{dict_data[key]}} </p>
+        {% endfor %}
+
+        <h1>Discover Elegance</h1>
+        <input type="text" class="input-field" placeholder="Say something..." value="{{ name }}">
+        <div>
+            <button class="btn btn-primary">Submit</button>
+            <button class="btn btn-secondary">Explore</button>
+        </div>
+    </div>
+</body>
+</html>
