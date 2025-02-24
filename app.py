@@ -17,7 +17,11 @@ from linebot.v3.webhooks import (
     MessageEvent,
     TextMessageContent
 )
+
 import os
+
+# self defined function
+from chatgpt_sample import chat_with_gpt
 
 app = Flask(__name__)
 
@@ -40,7 +44,8 @@ def callback():
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
-        app.logger.info("Invalid signature. Please check your channel access token/channel secret.")
+        app.logger.info(
+            "Invalid signature. Please check your channel access token/channel secret.")
         abort(400)
 
     return 'OK'
@@ -54,10 +59,16 @@ def handle_message(event):
             ReplyMessageRequest(
                 reply_token=event.reply_token,
                 messages=[
-                    TextMessage(text=event.message.text) ### <<< response message to user
+                    #  這邊是你要回覆給使用者的內容
+                    TextMessage(text=chat_with_gpt(
+                        system_prompt = "你是一個喜歡美式幽默而且中英文夾雜的揚升大師，嘴砲能力點滿，如果說有人找你討罵，你會精簡且銳利地罵他",
+                        user_message = event.message.text
+                        )
+                    )
                 ]
             )
         )
+
 
 if __name__ == "__main__":
     app.run()
