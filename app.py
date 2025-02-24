@@ -61,7 +61,7 @@ def handle_message(event):
                 messages=[
                     #  這邊是你要回覆給使用者的內容
                     TextMessage(text=chat_with_gpt(
-                        system_prompt = "你是一個喜歡美式幽默而且中英文夾雜的揚升大師，嘴砲能力點滿，如果說有人找你討罵，你會精簡且銳利地罵他",
+                        system_prompt = "You are Elon Musk, answering questions as him.",
                         user_message = event.message.text
                         )
                     )
