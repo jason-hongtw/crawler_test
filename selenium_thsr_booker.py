@@ -6,6 +6,7 @@ from selenium.webdriver.support.select import Select  # 下拉式選單使用
 from selenium.common.exceptions import NoSuchElementException #handle exception
 from ocr_component import get_captcha_code
 from pprint import pprint
+from datetime import date
 
 options = webdriver.ChromeOptions() #創立 driver物件所需的參數物件(防止爬網頁繞圈)
 options.add_argument("--disable-blink-features=AutomationControlled")
@@ -15,28 +16,36 @@ driver.get("https://irs.thsrc.com.tw/IMINT/")
 '''
 Step 1: setup options for booking information
 '''
+# Booking parameters
+start_station = '台中'
+dest_station = '板橋'
+start_time = '18:00'
+start_date = '二月 25, 2025'
 
-#click cookie button
+# Click accept cookie button
 accept_cookie_button = driver.find_element(By.ID, "cookieAccpetBtn")
 accept_cookie_button.click()
 
-# choose booking parameters: startStation, destStation, uk-select
+# Choose Booking parameters: startStation, destStation, time
 start_station_element = driver.find_element(By.NAME, 'selectStartStation')
-Select(start_station_element).select_by_visible_text('台中')
+Select(start_station_element).select_by_visible_text(start_station)
 
 dest_station_element = driver.find_element(By.NAME, 'selectDestinationStation')
-Select(dest_station_element).select_by_visible_text('板橋')
+Select(dest_station_element).select_by_visible_text(dest_station)
 
 start_time_element = driver.find_element(By.NAME, 'toTimeTable')
-Select(start_time_element).select_by_visible_text('18:30')
+Select(start_time_element).select_by_visible_text(start_time)
 
 # choose start_date parameters
 driver.find_element(
     By.XPATH, "//input[@class='uk-input' and @readonly='readonly']").click()
-
-start_date = '二月 21, 2025'
-driver.find_element(
-    By.XPATH, f"//span[@class='flatpickr-day' and @aria-label='{start_date}']").click()
+time.sleep(2)
+try:
+    driver.find_element(
+        By.XPATH, f"//span[@class='flatpickr-day today selected' and @aria-label='{start_date}']").click()
+except NoSuchElementException:
+    driver.find_element(
+        By.XPATH, f"//span[@class='flatpickr-day' and @aria-label='{start_date}']").click()
 
 while True:
 # captcha
