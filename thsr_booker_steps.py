@@ -113,15 +113,19 @@ def booking_with_info(start_station, dest_station, start_time, start_date):
     return trains_info
 
 
-def select_train_and_submit_booking(trains_info):
+def select_train_and_submit_booking(trains_info, which_train=None):
 
-    while True:
-        try:
-            which_train = int(input("Choose your train. Enter from 1~10:\n"))-1
-            trains_info[which_train]['radio_box'].click()
-            break
-        except IndexError:
-            print('Index out of range, please enter again.')
+    if which_train is None:
+        #如果沒有選擇車次，則由使用者選擇(一般流程在CMD輸入)
+        while True:
+            try:
+                which_train = int(input("Choose your train. Enter from 1~10:\n"))-1
+                trains_info[which_train]['radio_box'].click()
+                break
+            except IndexError:
+                print('Index out of range, please enter again.')
+
+    trains_info[which_train]['radio_box'].click()
     # Submit booking requests
     driver.find_element(By.NAME, 'SubmitButton').click()
 

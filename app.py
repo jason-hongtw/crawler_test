@@ -22,8 +22,9 @@ import os
 from datetime import date
 
 # self defined function
-from booking_info_extraction_flow import extract_dict_from_string
+from booking_info_extraction_flow import convert_date_to_thsr_format, extract_dict_from_string
 from chatgpt_sample import chat_with_gpt
+from thsr_booker_steps import booking_with_info, create_driver, select_train_and_submit_booking
 
 app = Flask(__name__)
 
@@ -105,7 +106,7 @@ def handle_message(event):
     elif user_data.get('intent') == '訂高鐵': # 意圖判斷
         #上一輪的資訊狀態
         unfilled_slots = [
-            key for key in necessary_slots if key not in user_data] # 未填寫的欄位
+            key for key in necessary_slots if key not in user_data.get(key)] # 未填寫的欄位
 
         #使用者訊息擷取
         system_prompt = f"""
@@ -121,35 +122,62 @@ def handle_message(event):
         # 判斷已填寫的資訊
         user_data = get_user_data(event.source.user_id) # 重新讀取一次新的使用者資訊
         filled_slots = [
-            key for key in necessary_slots if key in user_data] # 已填寫的欄位
+            key for key in necessary_slots if key in user_data.get(key)] # 已填寫的欄位
         unfilled_slots = [
-            key for key in necessary_slots if key not in user_data] # 未填寫的欄位
+            key for key in necessary_slots if key not in user_data.get(key)] # 未填寫的欄位
 
         app.logger.info(f"已填寫欄位: {filled_slots}")
         app.logger.info(f"未填寫欄位: {unfilled_slots}")
 
         if len(unfilled_slots) == 0:
             # 依照訊息送出訂位，直到選車為止
-            pass
+            user_data = convert_date_to_thsr_format(user_data)
+            create_driver() #目前只支持單人，driver是全域變數
+            trains_info = booking_with_info(user_data)
+
+            # 顯示高鐵車次，選擇車次
+            train_message = ""
+            for idx, train in enumerate(trains_info):
+                idx += 1
+                train_message += \
+                f"({idx}) - {train['train_code']}, \
+                行駛時間={train['duration']} | \
+                {train['depart_time']} -> \
+                {train['arrival_time']} \n"
+
+            bot_response = f"請選擇你要搭乘的高鐵車次：\n{train_message}"
+            update_user_data(user_id, intent="選高鐵", trains_info=trains_info)
         else:
             # 部分欄位已填寫
             # 詢問未填寫的欄位
-            pass
+            bot_response = f"請補充你的高鐵訂位資訊，包含：{', '.join(unfilled_slots)}: "
 
+    elif user_data.get('intent') == '選高鐵':
+        try:
+            # 依照使用者選擇的車次進行訂位
+            which_train = int(user_message)-1
+            trains_info = user_data.get('trains_info')
+            select_train_and_submit_booking(trains_info, which_train)
+            bot_response = "訂票完成！"
+        except Exception as e:
+            # 如果使用者回復無法判斷內容
+            app.logger.error(e)
+            bot_response = "請輸入正確的1-10車次編號！"
+
+    else:
+        bot_response = chat_with_gpt(
+            system_prompt = "回應二十個字以內",
+            user_message = user_message
+        )
+
+    response_messages = [TextMessage(text=bot_response)]
 
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
         line_bot_api.reply_message_with_http_info(
             ReplyMessageRequest(
                 reply_token=event.reply_token,
-                messages=[
-                    #  這邊是你要回覆給使用者的內容
-                    TextMessage(text=chat_with_gpt(
-                        system_prompt = "You are Elon Musk, answering questions as Elon Musk.",
-                        user_message = event.message.text
-                        )
-                    )
-                ]
+                messages=response_messages
             )
         )
 
