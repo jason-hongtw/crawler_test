@@ -151,9 +151,11 @@ def select_train_and_submit_booking(trains_info, which_train=None):
         {trains_info[which_train]['depart_time']} -> \
         {trains_info[which_train]['arrival_time']}"
     )
-    print('您的車票共 ', driver.find_element(By.ID, 'TotalPrice').text, " 元")
+
+    ticket_price = driver.find_element(By.ID, 'TotalPrice').text
+    print(f'您的車票共, {ticket_price} 元')
     driver.find_element(
-        By.CLASS_NAME, 'ticket-summary').screenshot('thsr_summary.png')
+        By.CLASS_NAME, 'ticket-summary').screenshot('thsr_booking_result.png')
 
     # enter personal ID
     input_personal_id = driver.find_element(By.ID, 'idNumber')
@@ -174,7 +176,7 @@ def select_train_and_submit_booking(trains_info, which_train=None):
     time.sleep(2)
     while True:
         try:
-            driver.find_element(By.CLASS_NAME, 'uk-flex uk-flex-between uk-flex-column primary-payment-v2-inner')
+            driver.find_element(By.CLASS_NAME, 'ticket-summary')
             print('Redirected to payment page')
             break
         except NoSuchElementException:
@@ -182,11 +184,13 @@ def select_train_and_submit_booking(trains_info, which_train=None):
             time.sleep(2)
 
     # Save booking result
+    screenshot_filename = 'thsr_booking_result.png'
     driver.find_element(
-        By.CLASS_NAME, 'ticket-summary').screenshot('thsr_booking_result.png')
+        By.CLASS_NAME, 'ticket-summary').screenshot('screenshot_filename')
     print("訂票完成!")
 
-    return
+    driver.quit()
+    return screenshot_filename
 
 if __name__ == "__main__":
 

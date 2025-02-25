@@ -18,6 +18,7 @@ from linebot.v3.webhooks import (
     TextMessageContent
 )
 
+import textwrap
 import os
 from datetime import date
 
@@ -65,7 +66,11 @@ def update_user_data(user_id, **info_dict):
     if user_id not in user_data:
         user_data[user_id] = info_dict
     else:
-        user_data[user_id].update(info_dict)
+        info_has_value = {
+            slot_name: slot_value
+            for slot_name, slot_value in info_dict.items() if slot_value
+        }
+        user_data[user_id].update(info_has_value)
 
 def get_user_data(user_id):
     return user_data.get(user_id, {})
@@ -95,7 +100,7 @@ def handle_message(event):
     user_id = event.source.user_id
     user_message = event.message.text
     user_data = get_user_data(user_id)
-    necessary_slots = ['出發地', '到達站', '出發日期', '出發時分']
+    necessary_slots = ['出發站', '到達站', '出發日期', '出發時分']
 
     #.get("") is used to get the value of the key, if the key does not exist, it will return the default value
     if user_data.get('intent',"") != '訂高鐵' and user_message == "訂高鐵":
@@ -106,7 +111,7 @@ def handle_message(event):
     elif user_data.get('intent') == '訂高鐵': # 意圖判斷
         #上一輪的資訊狀態
         unfilled_slots = [
-            key for key in necessary_slots if key not in user_data.get(key)] # 未填寫的欄位
+            key for key in necessary_slots if not user_data.get(key)] # 未填寫的欄位
 
         #使用者訊息擷取
         system_prompt = f"""
@@ -122,9 +127,9 @@ def handle_message(event):
         # 判斷已填寫的資訊
         user_data = get_user_data(event.source.user_id) # 重新讀取一次新的使用者資訊
         filled_slots = [
-            key for key in necessary_slots if key in user_data.get(key)] # 已填寫的欄位
+            key for key in necessary_slots if user_data.get(key)] # 已填寫的欄位
         unfilled_slots = [
-            key for key in necessary_slots if key not in user_data.get(key)] # 未填寫的欄位
+            key for key in necessary_slots if not user_data.get(key)] # 未填寫的欄位
 
         app.logger.info(f"已填寫欄位: {filled_slots}")
         app.logger.info(f"未填寫欄位: {unfilled_slots}")
@@ -133,7 +138,11 @@ def handle_message(event):
             # 依照訊息送出訂位，直到選車為止
             user_data = convert_date_to_thsr_format(user_data)
             create_driver() #目前只支持單人，driver是全域變數
-            trains_info = booking_with_info(user_data)
+            trains_info = booking_with_info(
+                start_station=user_data['出發站'],
+                dest_station=user_data['到達站'],
+                start_time=user_data['出發時分'],
+                start_date=user_data['出發日期'])
 
             # 顯示高鐵車次，選擇車次
             train_message = ""
@@ -157,8 +166,17 @@ def handle_message(event):
             # 依照使用者選擇的車次進行訂位
             which_train = int(user_message)-1
             trains_info = user_data.get('trains_info')
+            selected_train_message = ""
             select_train_and_submit_booking(trains_info, which_train)
-            bot_response = "訂票完成！"
+            selected_train_message += \
+                textwrap.dedent(f"""\
+                    車次: {trains_info[which_train]['train_code']}
+                    行駛時間: {trains_info[which_train]['duration']}
+                    列車起到站時間:
+                    {trains_info[which_train]['depart_time']} -> {trains_info[which_train]['arrival_time']}
+                """)
+
+            bot_response = f"{selected_train_message} \n 訂票完成！"
         except Exception as e:
             # 如果使用者回復無法判斷內容
             app.logger.error(e)
