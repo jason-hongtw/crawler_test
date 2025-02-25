@@ -44,12 +44,10 @@ def booking_with_info(start_station, dest_station, start_time, start_date):
     driver.find_element(
         By.XPATH, "//input[@class='uk-input' and @readonly='readonly']").click()
     time.sleep(2)
-    try:
-        driver.find_element(
-            By.XPATH, f"//span[@class='flatpickr-day today selected' and @aria-label='{start_date}']").click()
-    except NoSuchElementException:
-        driver.find_element(
-            By.XPATH, f"//span[@class='flatpickr-day' and @aria-label='{start_date}']").click()
+
+    # include today's class and other days
+    driver.find_element(
+        By.XPATH, f"//span[(@class='flatpickr-day' or @class='flatpickr-day today selected') and @aria-label='{start_date}']").click()
 
     while True:
     # captcha
